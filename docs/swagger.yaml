@@ -1,0 +1,72 @@
+swagger: "2.0"
+info:
+  description: Unofficial API for Pornhub
+  version: "0.0.1"
+  title: "Pornhub API"
+tags:
+- name: "search"
+  description: "動画検索"
+paths:
+  /pornhub/v1/search:
+    get:
+      tags:
+      - "search"
+      summary: "動画検索API"
+      description: "動画検索結果を取得します。"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "q"
+        in: "query"
+        description: "検索キーワード"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "OK"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Video"
+        "400":
+          description: "Bad Request"
+          schema:
+            type: "object"
+            properties:
+              error:
+                type: "integer"
+                example: 400
+              error_description:
+                type: "string"
+                example: "Bad Request"
+        "503":
+          description: "Internal Server Error"
+          schema:
+            type: "object"
+            properties:
+              error:
+                type: "integer"
+                example: 503
+              error_description:
+                type: "string"
+                example: "Internal Server Error"
+definitions:
+  Video:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        description: "ID"
+        example: 308401031
+      title:
+        type: "string"
+        description: "タイトル"
+        example: "Playing with my pussy with vibrating eggs"
+      thumbnail_url:
+        type: "string"
+        description: "サムネイル画像URL"
+        example: "https://ci.phncdn.com/videos/202004/29/308401031/original/(m=eafTGgaaaa)(mh=O6rd6NeGgYm2bA4F)16.jpg"
+      view_key:
+        type: "string"
+        description: "ビューキー"
+        example: "ph5ea8d3124e2fd"
