@@ -19,15 +19,12 @@ class PornhubController:
         except Exception as e:
             abort(503, "Failed to get video data from pornhub.")
 
-        data = {
-            "kind": "pornhub#searchListResponse",
-            "items": [{
-                "id": video.id,
-                "title": video.title,
-                "thumbnailUrl": video.thumbnail_url,
-                "viewKey": video.view_key
-            } for video in videos]
-        }
+        data = [{
+            "id": video.id,
+            "title": video.title,
+            "thumbnail_url": video.thumbnail_url,
+            "view_key": video.view_key
+        } for video in videos]
 
         response_body = json.dumps(data, ensure_ascii=False)
 
