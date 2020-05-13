@@ -1,3 +1,4 @@
+import re
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import List
@@ -40,7 +41,32 @@ class VideoSearchService(IVideoSearchService):
 
     SEARCH_RESULT_PAGE_URL = "https://www.pornhub.com/video/search?search={query}"
 
-    def execute(self, query: str) -> List[Video]:
+    def count_by_query(self, query) -> int:
+        url = self.SEARCH_RESULT_PAGE_URL.format(query=query)
+
+        response = self._web_client.get(url)
+        if not response.is_successful():
+            return 0
+
+        html = response.body
+
+        count = self._extract_hit_num_from_html(html)
+
+        return count
+
+    @staticmethod
+    def _extract_hit_num_from_html(html: str) -> int:
+        soup = BeautifulSoup(html, 'html.parser')
+
+        div = soup.find("div", class_="showingCounter")
+
+        counter_string = div.text.strip()
+
+        count = int(re.match("Showing .* of (.*)", counter_string).group(1))
+
+        return count
+
+    def find_by_query(self, query: str) -> List[Video]:
         url = self.SEARCH_RESULT_PAGE_URL.format(query=query)
 
         response = self._web_client.get(url)
@@ -53,7 +79,8 @@ class VideoSearchService(IVideoSearchService):
 
         return videos
 
-    def _extract_video_data_from_html(self, html: str) -> List[Video]:
+    @staticmethod
+    def _extract_video_data_from_html(html: str) -> List[Video]:
         soup = BeautifulSoup(html, 'html.parser')
 
         try:

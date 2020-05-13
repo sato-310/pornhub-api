@@ -25,9 +25,21 @@ paths:
         "200":
           description: "OK"
           schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Video"
+            type: "object"
+            properties:
+              page_info:
+                type: "object"
+                properties:
+                  total_results:
+                    type: "int"
+                    example: 3200
+                  results_per_page:
+                    type: "int"
+                    example: 20
+              items:
+                type: "array"
+                items:
+                  $ref: "#/definitions/Video"
         "400":
           description: "Bad Request"
           schema:

@@ -3,12 +3,13 @@ from bottle import Bottle
 
 from infrastracture import IVideoSearchService, VideoSearchService, IWebClient, WebClient
 from service import PornhubController, ErrorController
-from application import IGetVideoListQuery, GetVideoListQuery
+from application import IGetVideoCountQuery, GetVideoCountQuery, IGetVideoListQuery, GetVideoListQuery
 
 
 def config(binder):
     binder.bind(IWebClient, WebClient())
     binder.bind(IVideoSearchService, VideoSearchService())
+    binder.bind(IGetVideoCountQuery, GetVideoCountQuery())
     binder.bind(IGetVideoListQuery, GetVideoListQuery())
 
 
