@@ -13,7 +13,7 @@ class IVideoSearchService(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def find_by_query(self, query: str) -> List[Video]:
+    def find_by_query(self, query: str, count: int, offset: int) -> List[Video]:
         pass
 
 
@@ -33,7 +33,7 @@ class IGetVideoCountQuery(metaclass=ABCMeta):
 
 class IGetVideoListQuery(metaclass=ABCMeta):
     @abstractmethod
-    def execute(self, query: str) -> List[VideoModel]:
+    def execute(self, query: str, count: int, offset: int) -> List[VideoModel]:
         pass
 
 
@@ -47,8 +47,8 @@ class GetVideoCountQuery(IGetVideoCountQuery):
 class GetVideoListQuery(IGetVideoListQuery):
     _video_search_service = inject.attr(IVideoSearchService)
 
-    def execute(self, query: str) -> List[VideoModel]:
-        videos = self._video_search_service.find_by_query(query)
+    def execute(self, query: str, count: int, offset: int) -> List[VideoModel]:
+        videos = self._video_search_service.find_by_query(query, count, offset)
         if not videos:
             return []
 

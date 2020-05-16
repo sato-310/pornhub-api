@@ -7,7 +7,8 @@ from application import IGetVideoCountQuery, IGetVideoListQuery, VideoModel
 
 
 class PornhubController:
-    DEFAULT_RESULTS_PER_PAGE = 20
+    DEFAULT_COUNT = 20
+    DEFAULT_OFFSET = 0
 
     _get_video_count_query = inject.attr(IGetVideoCountQuery)
     _get_video_list_query = inject.attr(IGetVideoListQuery)
@@ -17,17 +18,29 @@ class PornhubController:
         if not query:
             abort(400, "Required parameter 'q' missing.")
 
+        count = request.query.get("count") or self.DEFAULT_COUNT
+        try:
+            count = int(count)
+        except ValueError:
+            abort(400, "'count' data type invalid.")
+
+        offset = request.query.get("offset") or self.DEFAULT_OFFSET
+        try:
+            offset = int(offset)
+        except ValueError:
+            abort(400, "'offset' data type invalid.")
+
         try:
             total_results = self._get_video_count_query.execute(query)
 
-            videos = self._get_video_list_query.execute(query)
+            videos = self._get_video_list_query.execute(query, count, offset)
         except Exception as e:
             abort(503, "Failed to get video data from pornhub.")
 
         data = {
             "page_info": {
                 "total_results": total_results,
-                "results_per_page": self.DEFAULT_RESULTS_PER_PAGE
+                "results_per_page": count
             },
             "items": [
                 {

@@ -39,10 +39,10 @@ class WebClient(IWebClient):
 class VideoSearchService(IVideoSearchService):
     _web_client = inject.attr(IWebClient)
 
-    SEARCH_RESULT_PAGE_URL = "https://www.pornhub.com/video/search?search={query}"
+    SEARCH_RESULT_PAGE_URL = "https://www.pornhub.com/video/search?search={query}&page={page}"
 
     def count_by_query(self, query) -> int:
-        url = self.SEARCH_RESULT_PAGE_URL.format(query=query)
+        url = self.SEARCH_RESULT_PAGE_URL.format(query=query, page=1)
 
         response = self._web_client.get(url)
         if not response.is_successful():
@@ -66,18 +66,34 @@ class VideoSearchService(IVideoSearchService):
 
         return count
 
-    def find_by_query(self, query: str) -> List[Video]:
-        url = self.SEARCH_RESULT_PAGE_URL.format(query=query)
+    def find_by_query(self, query: str, count: int, offset: int) -> List[Video]:
+        page_start = offset // 20 + 1
+        page_end = (offset + count) // 20 + 1
 
-        response = self._web_client.get(url)
-        if not response.is_successful():
-            return []
+        start_element = offset % 20
+        end_element = (offset + count) % 20
 
-        html = response.body
+        results = []
+        for page in range(page_start, page_end + 1):
+            url = self.SEARCH_RESULT_PAGE_URL.format(query=query, page=page)
 
-        videos = self._extract_video_data_from_html(html)
+            response = self._web_client.get(url)
+            if not response.is_successful():
+                raise RuntimeError()
 
-        return videos
+            html = response.body
+
+            videos = self._extract_video_data_from_html(html)
+            if page == page_start and page == page_end:
+                videos = videos[start_element:end_element]
+            elif page == page_start:
+                videos = videos[start_element:]
+            elif page == page_end:
+                videos = videos[:end_element]
+
+            results += videos
+
+        return results
 
     @staticmethod
     def _extract_video_data_from_html(html: str) -> List[Video]:
@@ -91,7 +107,7 @@ class VideoSearchService(IVideoSearchService):
         videos = []
         for pc_video_list_item in pc_video_list_items:
             try:
-                id = pc_video_list_item["data-id"]
+                id = int(pc_video_list_item["data-id"])
                 view_key = pc_video_list_item["_vkey"]
 
                 img = pc_video_list_item.find("img")
